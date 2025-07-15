@@ -1,17 +1,17 @@
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { Provider as PaperProvider, Text } from 'react-native-paper';
+import { Provider as PaperProvider, MD3DarkTheme, Text } from 'react-native-paper';
 import 'react-native-reanimated';
 import { Provider as ReduxProvider } from 'react-redux';
-import AuthScreen from '@/modules/auth/components/AuthScreen';
-import { AuthService } from '@/modules/auth/services/authService';
+import { AuthScreen } from '../modules/auth';
+import { getCurrentUser } from '@/modules/auth/services/authService';
 import store, { useAppDispatch, useUser } from '../store';
-import { setUser } from '@/modules/auth/models/userSlice';
+import { setUser } from '../store/slices/userSlice';
 import MainPage from './(tabs)/index';
-import ProfileScreen from './(tabs)/profile';
+import { User } from '@/modules/auth/models/User';
+import { ProfileScreen }  from '../modules/profile';
 
 const Tab = createBottomTabNavigator();
 
@@ -61,9 +61,9 @@ function AppContent() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const currentUser = await AuthService.getCurrentUser();
+        const currentUser = await getCurrentUser();
         if (currentUser) {
-          dispatch(setUser(currentUser));
+          dispatch(setUser(currentUser as unknown as User));
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -80,15 +80,13 @@ function AppContent() {
   }
 
   return (
-    <PaperProvider>
-      <ThemeProvider value={DefaultTheme}>
+    <PaperProvider theme={MD3DarkTheme}>
         {user ? (
           <TabNavigator />
         ) : (
           <AuthScreen />
         )}
         <StatusBar style="light" />
-      </ThemeProvider>
     </PaperProvider>
   );
 }

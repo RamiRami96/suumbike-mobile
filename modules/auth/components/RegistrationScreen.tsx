@@ -78,7 +78,7 @@ export default function RegistrationScreen() {
   };
 
   return (
-    <View style={styles.bg}>
+    <View style={styles.container}>
       <View style={styles.centerWrap}>
         <Card style={styles.card} elevation={4}>
           <Card.Title title="Register" titleStyle={styles.cardTitle} />
@@ -182,8 +182,9 @@ export default function RegistrationScreen() {
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
               disabled={isLoading}
-              style={styles.registerBtn}
-              contentStyle={{ height: 48 }}
+              style={styles.button}
+              contentStyle={styles.buttonContent}
+              labelStyle={styles.buttonLabel}
             >
               Register
             </Button>
@@ -195,13 +196,12 @@ export default function RegistrationScreen() {
 }
 
 const styles = StyleSheet.create({
-  bg: {
+  container: {
     flex: 1,
-    backgroundColor: '#19181e',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 600,
-    padding: 16,
+    backgroundColor: '#19181e',
+    width: '80%',
   },
   centerWrap: {
     width: '100%',
@@ -276,11 +276,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 13,
   },
-  registerBtn: {
+  button: {
+    backgroundColor: '#a29bfe',
+    borderRadius: 12,
     marginTop: 8,
-    borderRadius: 24,
-    fontWeight: 'bold',
-    fontSize: 18,
-    letterSpacing: 1,
+    minHeight: 48,
+    justifyContent: 'center',
+    elevation: 0,
   },
+  buttonContent: {
+    height: 48,
+  },
+  buttonLabel: {
+    color: '#23222a',
+    fontWeight: 700,
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+
 }); 

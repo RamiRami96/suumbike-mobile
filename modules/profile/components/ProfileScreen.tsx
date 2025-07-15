@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, Image, View, Alert } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
-import ImagePickerComponent from '@/modules/auth/components/ImagePicker';
-import { useAppDispatch, useUser } from '@/modules/auth/models/store';
-import { logout } from '@/modules/auth/models/userSlice';
-import { AuthService } from '@/modules/auth/services/authService';
+import ImagePickerComponent from '../../auth/components/ImagePicker';
+import { logout } from '../../../store/slices/userSlice';
+import { logout as logoutService } from '../../auth/services/authService';
+import { useAppDispatch, useUser } from '../../../store';
 
 export default function ProfileScreen() {
   const user = useUser();
@@ -14,16 +14,15 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-      await AuthService.logout();
+      await logoutService();
       dispatch(logout());
     } catch {
-      // Handle logout error silently
+      console.log('Logout error');
     }
   };
 
   const handleUpdateProfile = async () => {
     if (!user) return;
-    
     setIsLoading(true);
     try {
       // For now, we'll just show a success message
@@ -49,7 +48,7 @@ export default function ProfileScreen() {
   }
 
   return (
-      <View style={styles.container}>
+    <View style={styles.container}>
       <Card style={styles.card}>
         <Card.Title title="Profile Settings" />
         <Card.Content>

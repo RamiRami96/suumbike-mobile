@@ -1,17 +1,17 @@
 import React from 'react';
-import { StyleSheet, Image, View } from 'react-native';
-import { Button, Text } from 'react-native-paper';
-import { useAppDispatch, useUser } from '@/modules/auth/models/store';
-import { logout } from '@/modules/auth/models/userSlice';
-import { AuthService } from '@/modules/auth/services/authService';
+import { StyleSheet, View } from 'react-native';
+import { Button } from 'react-native-paper';
+import { useAppDispatch } from '../../store';
+import { logout } from '../../store/slices/userSlice';
+import { logout as logoutService } from '../../modules/auth/services/authService';
+import RoomList from '../../modules/rooms/components/RoomList';
 
 export default function MainPage() {
-  const user = useUser();
   const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
     try {
-      await AuthService.logout();
+      await logoutService();
       dispatch(logout());
     } catch (error) {
       console.error('Logout error:', error);
@@ -20,20 +20,7 @@ export default function MainPage() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.profileSection}>
-        {user?.avatar ? (
-          <Image source={{ uri: user.avatar }} style={styles.profileImage} />
-        ) : (
-          <View style={styles.profilePlaceholder}>
-            <Text variant="headlineMedium" style={styles.profileInitial}>
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </Text>
-          </View>
-        )}
-        <Text variant="headlineLarge" style={styles.h1}>Welcome, {user?.name}!</Text>
-        <Text variant="bodyLarge" style={styles.subtitle}>You are successfully logged in</Text>
-      </View>
-      
+      <RoomList />
       <Button 
         mode="outlined" 
         onPress={handleLogout}
@@ -51,6 +38,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+    backgroundColor: '#19181e',
   },
   profileSection: {
     alignItems: 'center',

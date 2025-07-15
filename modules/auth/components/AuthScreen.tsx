@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import LoginScreen from './LoginScreen';
 import RegistrationScreen from './RegistrationScreen';
-import { useAppDispatch } from '../models/store';
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <>
+    <View style={styles.bg}>
       {isLogin ? (
         <LoginScreen />
       ) : (
@@ -22,15 +21,17 @@ export default function AuthScreen() {
       >
         {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
       </Button>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  bg: {
     flex: 1,
+    minHeight: '100%',
+    backgroundColor: '#19181e',
     justifyContent: 'center',
-    padding: 16,
+    alignItems: 'center',
   },
   toggleButton: {
     marginTop: 16,
