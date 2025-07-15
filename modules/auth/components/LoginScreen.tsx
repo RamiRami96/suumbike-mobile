@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, Card, Text, TextInput } from 'react-native-paper';
-import { AuthService } from '../services/authService';
+import { login } from '../services/authService';
 import { StyleSheet, View } from 'react-native';
 import { useAppDispatch } from '../../../store';
 import { setUser } from '../models/userSlice';
+import auth from '@react-native-firebase/auth';
 
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,15 +18,27 @@ export default function LoginScreen() {
     setIsLoading(true);
     clearErrors('root');
     try {
-      const user = await AuthService.login(data.email, data.password);
-      if (user) {
-        dispatch(setUser(user));
-      } else {
-        setError('root', { type: 'manual', message: 'Invalid email or password' });
+      await login(data.email, data.password);
+      const uid = auth().currentUser?.uid || '';
+      dispatch(setUser({
+        id: uid,
+        email: data.email,
+        name: '',
+        age: 0,
+        avatar: '',
+        likedUsers: [],
+      }));
+      // Firebase automatically manages user state; you may fetch user info if needed
+      // Optionally, you can use auth().currentUser here
+      // dispatch(setUser({ email: data.email })); // You may want to fetch more user info
+    } catch (error: any) {
+      let message = 'Login failed. Please try again.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        message = 'Invalid email or password';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Invalid email address';
       }
-    } catch (error) {
-      console.error(error);
-      setError('root', { type: 'manual', message: 'Login failed. Please try again.' });
+      setError('root', { type: 'manual', message });
     } finally {
       setIsLoading(false);
     }

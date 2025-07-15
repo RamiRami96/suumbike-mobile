@@ -5,11 +5,12 @@ import { Button, Card, Text, TextInput } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ImagePickerComponent from '@/modules/auth/components/ImagePicker';
-import { AuthService } from '../services/authService';
+import { register } from '../services/authService';
 import { getAge, formatDate } from '../helpers/userHelpers';
 import { useRegistrationFormState } from '../hooks/useRegistrationFormState';
 import { useAppDispatch } from '../../../store';
 import { setUser } from '../models/userSlice';
+import auth from '@react-native-firebase/auth';
 
 export default function RegistrationScreen() {
   const {
@@ -40,19 +41,26 @@ export default function RegistrationScreen() {
     setIsLoading(true);
     clearErrors('root');
     try {
-      const user = await AuthService.register({
-        name: data.name,
+      await register(data.email, data.password);
+      const uid = auth().currentUser?.uid || '';
+      dispatch(setUser({
+        id: uid,
         email: data.email,
-        password: data.password,
+        name: data.name,
         age,
-        avatar: selectedImage,
-      });
-      dispatch(setUser(user));
+        avatar: selectedImage || '',
+        likedUsers: [],
+      }));
     } catch (error: any) {
-      setError('root', { 
-        type: 'manual', 
-        message: error.message || 'Registration failed. Please try again.' 
-      });
+      let message = 'Registration failed. Please try again.';
+      if (error.code === 'auth/email-already-in-use') {
+        message = 'Email is already in use';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Invalid email address';
+      } else if (error.code === 'auth/weak-password') {
+        message = 'Password is too weak';
+      }
+      setError('root', { type: 'manual', message });
     } finally {
       setIsLoading(false);
     }
