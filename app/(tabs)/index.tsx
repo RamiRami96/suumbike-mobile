@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useAppDispatch } from '../../store';
 import { logout } from '../../store/slices/userSlice';
 import { logout as logoutService } from '../../modules/auth/services/authService';
-import RoomList from '../../modules/rooms/components/RoomList';
+import RoomList from '../../modules/rooms/components/Room';
+import CreateRoomModal from '../../modules/rooms/components/CreateRoomModal';
 
 export default function MainPage() {
   const dispatch = useAppDispatch();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -18,8 +20,12 @@ export default function MainPage() {
     }
   };
 
+
   return (
     <View style={styles.container}>
+      <Button mode="contained" onPress={() => setModalVisible(true)} style={{ marginBottom: 16 }}>
+        Create Room
+      </Button>
       <RoomList />
       <Button 
         mode="outlined" 
@@ -28,6 +34,10 @@ export default function MainPage() {
       >
         Logout
       </Button>
+      <CreateRoomModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
     </View>
   );
 }
@@ -76,5 +86,26 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     marginBottom: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    elevation: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 16,
+    backgroundColor: '#f9f9f9',
   },
 });

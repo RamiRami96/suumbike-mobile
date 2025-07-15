@@ -6,7 +6,7 @@ import RoomCard from './RoomCard';
 import SearchBar from './SearchBar';
 import useRoomSearch from '../hooks/useRoomSearch';
 
-export default function RoomList() {
+export default function Room() {
   const user = useUser();
   const { search, setSearch, filteredRooms, loading } = useRoomSearch(user?.id);
 

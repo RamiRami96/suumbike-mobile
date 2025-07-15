@@ -8,4 +8,11 @@ export async function getRoomsByUserId(userId: string): Promise<Room[]> {
     .orderBy('createdAt', 'desc')
     .get();
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Room));
+}
+
+export async function createRoom(name: string, userId: string): Promise<Room> {
+  const createdAt = Date.now();
+  const roomData = { name, userId, createdAt, occupied: false };
+  const docRef = await firestore().collection('rooms').add(roomData);
+  return { id: docRef.id, ...roomData };
 } 

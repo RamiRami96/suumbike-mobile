@@ -12,9 +12,19 @@ export default function useRoomSearch(userId?: string) {
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-    getRoomsByUserId(userId)
-      .then(setRooms)
-      .finally(() => setLoading(false));
+    let isMounted = true;
+    const fetchRooms = () => {
+      setLoading(true);
+      getRoomsByUserId(userId)
+        .then(rooms => { if (isMounted) setRooms(rooms); })
+        .finally(() => { if (isMounted) setLoading(false); });
+    };
+    fetchRooms();
+    const interval = setInterval(fetchRooms, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [userId]);
 
   // Debounce search

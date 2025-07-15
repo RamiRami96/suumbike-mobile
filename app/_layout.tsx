@@ -10,8 +10,8 @@ import { getCurrentUser } from '@/modules/auth/services/authService';
 import store, { useAppDispatch, useUser } from '../store';
 import { setUser } from '../store/slices/userSlice';
 import MainPage from './(tabs)/index';
+import ProfileTab from './(tabs)/profile';
 import { User } from '@/modules/auth/models/User';
-import { ProfileScreen }  from '../modules/profile';
 
 const Tab = createBottomTabNavigator();
 
@@ -39,7 +39,7 @@ function TabNavigator() {
       />
       <Tab.Screen 
         name="Profile" 
-        component={ProfileScreen}
+        component={ProfileTab}
         options={{
           tabBarIcon: ({ color }) => (
             <Text style={{ color, fontSize: 20 }}>👤</Text>
