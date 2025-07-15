@@ -1,28 +1,30 @@
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, Card, Text, TextInput } from 'react-native-paper';
-import { ThemedView } from '@/components/ThemedView';
 import { AuthService } from '../services/authService';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useAppDispatch } from '../../../store';
+import { setUser } from '../models/userSlice';
 
-export default function LoginScreen({ onLogin }: { onLogin?: (user: any) => void }) {
+export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const { control, handleSubmit, formState: { errors }, setError, clearErrors } = useForm({
     defaultValues: { email: '', password: '' },
   });
+  const dispatch = useAppDispatch();
 
   const onSubmit = async (data: { email: string; password: string }) => {
     setIsLoading(true);
     clearErrors('root');
-    
     try {
       const user = await AuthService.login(data.email, data.password);
       if (user) {
-        onLogin?.(user);
+        dispatch(setUser(user));
       } else {
         setError('root', { type: 'manual', message: 'Invalid email or password' });
       }
     } catch (error) {
+      console.error(error);
       setError('root', { type: 'manual', message: 'Login failed. Please try again.' });
     } finally {
       setIsLoading(false);
@@ -30,7 +32,7 @@ export default function LoginScreen({ onLogin }: { onLogin?: (user: any) => void
   };
 
   return (
-    <ThemedView style={styles.container}>
+      <View style={styles.container}>
       <Card style={styles.card}>
         <Card.Title title="Login" titleStyle={styles.cardTitle} />
         <Card.Content>
@@ -85,7 +87,7 @@ export default function LoginScreen({ onLogin }: { onLogin?: (user: any) => void
           </Button>
         </Card.Content>
       </Card>
-    </ThemedView>
+    </View>
   );
 }
 

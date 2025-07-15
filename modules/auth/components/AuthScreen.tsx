@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
-import { ThemedView } from '@/components/ThemedView';
 import LoginScreen from './LoginScreen';
 import RegistrationScreen from './RegistrationScreen';
+import { useAppDispatch } from '../models/store';
 
-export default function AuthScreen({ onAuth }: { onAuth?: (user: any) => void }) {
+export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <ThemedView style={styles.container}>
+    <>
       {isLogin ? (
-        <LoginScreen onLogin={onAuth} />
+        <LoginScreen />
       ) : (
-        <RegistrationScreen onRegister={onAuth} />
+        <RegistrationScreen />
       )}
-      
       <Button 
         mode="text" 
         onPress={() => setIsLogin(!isLogin)}
@@ -23,7 +22,7 @@ export default function AuthScreen({ onAuth }: { onAuth?: (user: any) => void })
       >
         {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
       </Button>
-    </ThemedView>
+    </>
   );
 }
 

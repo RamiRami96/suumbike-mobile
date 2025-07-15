@@ -4,13 +4,13 @@ import { Button as PaperButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ExpoImagePicker from 'expo-image-picker';
 
-interface ImagePickerProps {
+type Props = {
   onImageSelected: (imageUri: string) => void;
   currentImage?: string;
   title?: string;
 }
 
-export default function ImagePickerComponent({ onImageSelected, currentImage, title = "Select Image" }: ImagePickerProps) {
+export default function ImagePickerComponent({ onImageSelected, currentImage, title = "Upload profile image" }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const requestPermissions = async () => {
@@ -64,7 +64,7 @@ export default function ImagePickerComponent({ onImageSelected, currentImage, ti
         labelStyle={styles.uploadBtnLabel}
         uppercase={false}
       >
-        Upload Image
+        {title}
       </PaperButton>
     </View>
   );

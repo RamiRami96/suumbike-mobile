@@ -1,38 +1,31 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, Card, Text, TextInput } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { ThemedView } from '@/components/ThemedView';
-import ImagePickerComponent from '@/components/ImagePicker';
+import ImagePickerComponent from '@/modules/auth/components/ImagePicker';
 import { AuthService } from '../services/authService';
+import { getAge, formatDate } from '../helpers/userHelpers';
+import { useRegistrationFormState } from '../hooks/useRegistrationFormState';
+import { useAppDispatch } from '../../../store';
+import { setUser } from '../models/userSlice';
 
-function getAge(dateString: string) {
-  const today = new Date();
-  const birthDate = new Date(dateString);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  return age;
-}
-
-function formatDate(dateString: string | null) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-export default function RegistrationScreen({ onRegister }: { onRegister?: (user: any) => void }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState<string | null>(null);
+export default function RegistrationScreen() {
+  const {
+    isLoading,
+    setIsLoading,
+    selectedImage,
+    setSelectedImage,
+    dateOfBirth,
+    setDateOfBirth,
+    showDatePicker,
+    setShowDatePicker,
+  } = useRegistrationFormState();
   const { control, handleSubmit, formState: { errors }, setError, clearErrors } = useForm({
     defaultValues: { name: '', email: '', password: '' },
   });
+  const dispatch = useAppDispatch();
 
   const onSubmit = async (data: { name: string; email: string; password: string }) => {
     if (!data.name || !data.email || !data.password || !dateOfBirth) {
@@ -54,7 +47,7 @@ export default function RegistrationScreen({ onRegister }: { onRegister?: (user:
         age,
         avatar: selectedImage,
       });
-      onRegister?.(user);
+      dispatch(setUser(user));
     } catch (error: any) {
       setError('root', { 
         type: 'manual', 
@@ -77,7 +70,7 @@ export default function RegistrationScreen({ onRegister }: { onRegister?: (user:
   };
 
   return (
-    <ThemedView style={styles.bg}>
+    <View style={styles.bg}>
       <View style={styles.centerWrap}>
         <Card style={styles.card} elevation={4}>
           <Card.Title title="Register" titleStyle={styles.cardTitle} />
@@ -189,7 +182,7 @@ export default function RegistrationScreen({ onRegister }: { onRegister?: (user:
           </Card.Content>
         </Card>
       </View>
-    </ThemedView>
+    </View>
   );
 }
 

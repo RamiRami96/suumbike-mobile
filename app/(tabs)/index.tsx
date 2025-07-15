@@ -1,10 +1,9 @@
 import React from 'react';
 import { StyleSheet, Image, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
-import { ThemedView } from '@/components/ThemedView';
-import { useAppDispatch, useUser } from '@/auth/models/store';
-import { logout } from '@/auth/models/userSlice';
-import { AuthService } from '@/auth/services/authService';
+import { useAppDispatch, useUser } from '@/modules/auth/models/store';
+import { logout } from '@/modules/auth/models/userSlice';
+import { AuthService } from '@/modules/auth/services/authService';
 
 export default function MainPage() {
   const user = useUser();
@@ -20,7 +19,7 @@ export default function MainPage() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.profileSection}>
         {user?.avatar ? (
           <Image source={{ uri: user.avatar }} style={styles.profileImage} />
@@ -42,7 +41,7 @@ export default function MainPage() {
       >
         Logout
       </Button>
-    </ThemedView>
+    </View>
   );
 }
 

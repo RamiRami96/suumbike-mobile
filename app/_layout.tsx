@@ -1,5 +1,4 @@
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
@@ -7,10 +6,10 @@ import React, { useEffect, useState } from 'react';
 import { Provider as PaperProvider, Text } from 'react-native-paper';
 import 'react-native-reanimated';
 import { Provider as ReduxProvider } from 'react-redux';
-import AuthScreen from '../auth/components/AuthScreen';
-import { AuthService } from '../auth/services/authService';
-import store, { useAppDispatch, useUser } from '../auth/models/store';
-import { setUser } from '../auth/models/userSlice';
+import AuthScreen from '@/modules/auth/components/AuthScreen';
+import { AuthService } from '@/modules/auth/services/authService';
+import store, { useAppDispatch, useUser } from '../store';
+import { setUser } from '@/modules/auth/models/userSlice';
 import MainPage from './(tabs)/index';
 import ProfileScreen from './(tabs)/profile';
 
@@ -52,7 +51,6 @@ function TabNavigator() {
 }
 
 function AppContent() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -83,11 +81,11 @@ function AppContent() {
 
   return (
     <PaperProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={DefaultTheme}>
         {user ? (
           <TabNavigator />
         ) : (
-          <AuthScreen onAuth={user => dispatch(setUser(user))} />
+          <AuthScreen />
         )}
         <StatusBar style="light" />
       </ThemeProvider>

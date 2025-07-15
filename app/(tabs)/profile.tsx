@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, Image, View, Alert } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
-import { ThemedView } from '@/components/ThemedView';
-import ImagePickerComponent from '@/components/ImagePicker';
-import { useAppDispatch, useUser } from '@/auth/models/store';
-import { logout } from '@/auth/models/userSlice';
-import { AuthService } from '@/auth/services/authService';
+import ImagePickerComponent from '@/modules/auth/components/ImagePicker';
+import { useAppDispatch, useUser } from '@/modules/auth/models/store';
+import { logout } from '@/modules/auth/models/userSlice';
+import { AuthService } from '@/modules/auth/services/authService';
 
 export default function ProfileScreen() {
   const user = useUser();
@@ -43,14 +42,14 @@ export default function ProfileScreen() {
 
   if (!user) {
     return (
-      <ThemedView style={styles.container}>
+      <View style={styles.container}>
         <Text>User not found</Text>
-      </ThemedView>
+      </View>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+      <View style={styles.container}>
       <Card style={styles.card}>
         <Card.Title title="Profile Settings" />
         <Card.Content>
@@ -98,7 +97,7 @@ export default function ProfileScreen() {
           </Button>
         </Card.Content>
       </Card>
-    </ThemedView>
+    </View>
   );
 }
 
