@@ -53,8 +53,8 @@ export default function ImagePickerComponent({ onImageSelected, currentImage, ti
       )}
       <PaperButton
         mode="contained"
-        icon={({ color, size }) => (
-          <MaterialCommunityIcons name="camera-plus" size={28} color={color} />
+        icon={({ color }) => (
+          <MaterialCommunityIcons name="camera-plus" size={18} color={color} style={{ marginRight: 10 }} />
         )}
         onPress={pickImage}
         loading={isLoading}
@@ -93,29 +93,25 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   uploadBtn: {
-    backgroundColor: '#23222a',
-    borderRadius: 16,
+    backgroundColor: '#3a3543',
+    borderRadius: 10,
     minHeight: 56,
     width: '100%',
     justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
+    elevation: 0,
+    shadowColor: 'transparent',
     marginTop: 0,
+    borderWidth: 0,
   },
   uploadBtnContent: {
     flexDirection: 'row',
     alignItems: 'center',
     height: 56,
-    paddingHorizontal: 20,
   },
   uploadBtnLabel: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
-    marginLeft: 16,
+    fontSize: 16,
+    fontWeight: '400', 
     letterSpacing: 0.5,
   },
   image: {

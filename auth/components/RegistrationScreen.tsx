@@ -149,7 +149,7 @@ export default function RegistrationScreen({ onRegister }: { onRegister?: (user:
                 onPress={() => setShowDatePicker(true)}
                 activeOpacity={0.8}
               >
-                <MaterialCommunityIcons name="calendar" size={22} color="#bdbdbd" style={{ marginRight: 12 }} />
+                <MaterialCommunityIcons name="calendar" size={18} color="#bdbdbd" style={{ marginRight: 12 }} />
                 <Text style={styles.dateText}>
                   {dateOfBirth ? formatDate(dateOfBirth) : 'Select date'}
                 </Text>
@@ -193,7 +193,6 @@ export default function RegistrationScreen({ onRegister }: { onRegister?: (user:
   );
 }
 
-const windowWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   bg: {
     flex: 1,
