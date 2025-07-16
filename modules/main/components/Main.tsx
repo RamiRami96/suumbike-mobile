@@ -1,24 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
-import { useAppDispatch } from '../../../store';
-import { logout } from '../../../store/slices/userSlice';
-import { logout as logoutService } from '../../auth/services/authService';
 import RoomList from '../../rooms/components/RoomList';
 import CreateRoomModal from '../../rooms/components/CreateRoomModal';
 
-export default function MainPage() {
-  const dispatch = useAppDispatch();
+export default function Main() {
   const [modalVisible, setModalVisible] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await logoutService();
-      dispatch(logout());
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -26,18 +13,7 @@ export default function MainPage() {
       <Button mode="contained" onPress={() => setModalVisible(true)} style={{ marginBottom: 16 }}>
         Create Room
       </Button>
-      <RoomList type="my-rooms" />
-      
-      <Text style={styles.sectionTitle}>Available Rooms to Join</Text>
-      <RoomList type="available-rooms" />
-      
-      <Button 
-        mode="outlined" 
-        onPress={handleLogout}
-        style={styles.logoutButton}
-      >
-        Logout
-      </Button>
+      <RoomList />
       <CreateRoomModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -58,8 +34,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginTop: 16,
     marginBottom: 8,
-  },
-  logoutButton: {
-    marginTop: 20,
   },
 }); 

@@ -5,24 +5,14 @@ import { useUser } from '../../../store';
 import { getAvailableRooms, joinRoom } from '../services/roomService';
 import { Room } from '../models/Room';
 import { router } from 'expo-router';
-import RoomCard from './RoomCard';
 import SearchBar from './SearchBar';
-import useRoomSearch from '../hooks/useRoomSearch';
 
-type RoomListProps = {
-  type: 'my-rooms' | 'available-rooms';
-  title?: string;
-};
-
-export default function RoomList({ type, title }: RoomListProps) {
+export default function RoomList() {
   const user = useUser();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
-
-  // Use the existing search hook for my-rooms
-  const { search: searchHook, setSearch: setSearchHook, filteredRooms: hookFilteredRooms, loading: hookLoading } = useRoomSearch(user?.id);
 
   const fetchAvailableRooms = useCallback(async () => {
     if (!user?.id) return;
@@ -42,14 +32,9 @@ export default function RoomList({ type, title }: RoomListProps) {
 
   useEffect(() => {
     if (user?.id) {
-      if (type === 'my-rooms') {
-        // Use the existing hook for my-rooms
-        return;
-      } else {
-        fetchAvailableRooms();
-      }
+      fetchAvailableRooms();
     }
-  }, [user?.id, type, fetchAvailableRooms]);
+  }, [user?.id, fetchAvailableRooms]);
 
   useEffect(() => {
     // Debounce search for available rooms
@@ -71,48 +56,12 @@ export default function RoomList({ type, title }: RoomListProps) {
     if (!user?.id) return;
     try {
       await joinRoom(room.id, user.id);
-      // Navigate to the room
-      // @ts-expect-error: Dynamic route type not recognized by expo-router types
       router.push({ pathname: '/(tabs)/room/[id]', params: { id: room.id } });
     } catch (error) {
       console.error('Error joining room:', error);
     }
   };
 
-  // Use hook data for my-rooms
-  if (type === 'my-rooms') {
-    if (hookLoading) {
-      return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#a29bfe" />
-          <Text style={styles.loadingText}>Loading your rooms...</Text>
-        </View>
-      );
-    }
-
-    if (!hookFilteredRooms.length) {
-      return (
-        <View style={styles.centered}>
-          <SearchBar value={searchHook} onChange={setSearchHook} />
-          <Text style={styles.noRoomsText}>No rooms found.</Text>
-        </View>
-      );
-    }
-
-    return (
-      <View style={{ flex: 1 }}>
-        <SearchBar value={searchHook} onChange={setSearchHook} />
-        <FlatList
-          data={hookFilteredRooms}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.list}
-          renderItem={({ item }) => <RoomCard room={item} />}
-        />
-      </View>
-    );
-  }
-
-  // Available rooms logic
   if (loading) {
     return (
       <View style={styles.centered}>
