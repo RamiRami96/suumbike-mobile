@@ -1,56 +1,38 @@
 import React from 'react';
 import { StyleSheet, Image, View } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
-import ImagePickerComponent from '../../../components/ImagePicker';
+import { Card, Text, IconButton } from 'react-native-paper';
+import { useProfileActions } from '../hooks/useProfileActions';
+import { User } from '@/modules/auth/models/User';
 
 interface ProfileContentProps {
-  user: any;
-  selectedImage: string;
-  isLoading: boolean;
-  onImageSelected: (imageUri: string) => void;
-  onUpdateProfile: () => void;
+  user: User;
 }
 
 export default function ProfileContent({
   user,
-  selectedImage,
-  isLoading,
-  onImageSelected,
-  onUpdateProfile,
 }: ProfileContentProps) {
+  const { handleLogout } = useProfileActions();
+
   return (
     <Card style={styles.card}>
-      <Card.Title title="Profile Settings" />
-      <Card.Content>
+      <Card.Title 
+        title="Profile Settings" 
+        right={(props) => (
+          <IconButton
+            {...props}
+            icon="logout"
+            onPress={handleLogout}
+            style={{ marginRight: 8 }}
+            accessibilityLabel="Logout"
+          />
+        )}
+      />
+      <Card.Content style={styles.cardContent}>
         <View style={styles.profileSection}>
-          {selectedImage ? (
-            <Image source={{ uri: selectedImage }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profilePlaceholder}>
-              <Text variant="headlineMedium" style={styles.profileInitial}>
-                {user.name?.charAt(0)?.toUpperCase() || 'U'}
-              </Text>
-            </View>
-          )}
+        <Image source={{ uri: user.avatar }} style={styles.profileImage} />
           <Text variant="headlineSmall" style={styles.userName}>{user.name}</Text>
           <Text variant="bodyMedium" style={styles.userEmail}>{user.email}</Text>
         </View>
-
-        <ImagePickerComponent
-          onImageSelected={onImageSelected}
-          currentImage={selectedImage}
-          title="Update Profile Picture"
-        />
-
-        <Button 
-          mode="contained" 
-          onPress={onUpdateProfile}
-          loading={isLoading}
-          disabled={isLoading}
-          style={styles.updateButton}
-        >
-          Update Profile
-        </Button>
       </Card.Content>
     </Card>
   );
@@ -71,12 +53,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 3,
     borderColor: '#ddd',
+    marginTop: 32,
   },
   profilePlaceholder: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#23222a', // darker placeholder
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -89,11 +72,16 @@ const styles = StyleSheet.create({
   },
   userName: {
     marginBottom: 4,
+    color: '#fff', // white text for dark bg
   },
   userEmail: {
     opacity: 0.7,
+    color: '#ccc', // lighter text for dark bg
   },
   updateButton: {
     marginTop: 16,
+  },
+  cardContent: {
+    backgroundColor: '#18171c', // dark background for card content
   },
 }); 

@@ -28,12 +28,13 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   bg: {
     flex: 1,
-    minHeight: '100%',
     backgroundColor: '#19181e',
     justifyContent: 'center',
     alignItems: 'center',
   },
   toggleButton: {
     marginTop: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
 }); 

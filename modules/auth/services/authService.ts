@@ -1,4 +1,4 @@
-import { auth } from '../../../firebaseConfig';
+import { auth } from '@/firebaseConfig';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, User, UserCredential } from 'firebase/auth';
 
 export const register = async (email: string, password: string): Promise<UserCredential> => {

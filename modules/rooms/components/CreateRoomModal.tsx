@@ -29,7 +29,6 @@ const CreateRoomModal= ({ visible, onClose }: Props) => {
       const room = await createRoom(roomName.trim(), user.id);
       setRoomName('');
       onClose();
-      // @ts-expect-error: Dynamic route type not recognized by expo-router types
       router.push({ pathname: '/(tabs)/room/[id]', params: { id: room.id } });
     } catch (error) {
       console.error('Error creating room:', error);

@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { View, Image, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { Button as PaperButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ExpoImagePicker from 'expo-image-picker';
 
 type Props = {
   onImageSelected: (imageUri: string) => void;
-  currentImage?: string;
   title?: string;
 }
 
-export default function ImagePickerComponent({ onImageSelected, currentImage, title = "Upload profile image" }: Props) {
+export default function ImagePickerComponent({ onImageSelected, title = "Upload profile image" }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const requestPermissions = async () => {
@@ -48,9 +47,7 @@ export default function ImagePickerComponent({ onImageSelected, currentImage, ti
 
   return (
     <View style={styles.container}>
-      {currentImage && (
-        <Image source={{ uri: currentImage }} style={styles.avatar} />
-      )}
+      {/* Removed image preview to avoid duplicate profile images */}
       <PaperButton
         mode="contained"
         icon={({ color }) => (

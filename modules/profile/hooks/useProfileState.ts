@@ -6,8 +6,6 @@ import { User } from '../../auth/models/User';
 
 export function useProfileState() {
   const user = useUser();
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(user?.avatar || '');
   const [likedUsers, setLikedUsers] = useState<User[]>([]);
 
   const fetchLikedUsers = useCallback(async () => {
@@ -49,20 +47,9 @@ export function useProfileState() {
     }
   }, [user?.id, fetchLikedUsers]);
 
-  const handleImageSelected = (imageUri: string) => {
-    setSelectedImage(imageUri);
-  };
-
-  const setLoading = (loading: boolean) => {
-    setIsLoading(loading);
-  };
 
   return {
     user,
-    isLoading,
-    selectedImage,
     likedUsers,
-    handleImageSelected,
-    setLoading,
   };
 } 

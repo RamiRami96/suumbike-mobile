@@ -22,7 +22,7 @@ export default function LikedUsersList({ likedUsers }: LikedUsersListProps) {
 
   return (
     <Card style={styles.card}>
-      <Card.Title title={`Liked Users (${likedUsers.length})`} />
+      <Card.Title title="Liked Users" />
       <Card.Content>
         {likedUsers.length > 0 ? (
           <FlatList
