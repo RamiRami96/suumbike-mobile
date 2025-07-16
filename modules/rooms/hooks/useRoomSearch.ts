@@ -13,14 +13,27 @@ export default function useRoomSearch(userId?: string) {
     if (!userId) return;
     setLoading(true);
     let isMounted = true;
-    const fetchRooms = () => {
+    
+    const fetchRooms = async () => {
+      if (!isMounted) return;
       setLoading(true);
-      getRoomsByUserId(userId)
-        .then(rooms => { if (isMounted) setRooms(rooms); })
-        .finally(() => { if (isMounted) setLoading(false); });
+      try {
+        const rooms = await getRoomsByUserId(userId);
+        if (isMounted) {
+          setRooms(rooms);
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     };
+    
     fetchRooms();
     const interval = setInterval(fetchRooms, 10000);
+    
     return () => {
       isMounted = false;
       clearInterval(interval);

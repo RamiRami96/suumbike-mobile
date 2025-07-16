@@ -84,7 +84,8 @@ export default function RoomList({ type, title }: RoomListProps) {
     if (hookLoading) {
       return (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color="#a29bfe" />
+          <Text style={styles.loadingText}>Loading your rooms...</Text>
         </View>
       );
     }
@@ -115,7 +116,8 @@ export default function RoomList({ type, title }: RoomListProps) {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#a29bfe" />
+        <Text style={styles.loadingText}>Loading rooms...</Text>
       </View>
     );
   }
@@ -177,5 +179,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     opacity: 0.7,
     textAlign: 'center',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 8,
+    opacity: 0.7,
   },
 }); 

@@ -7,9 +7,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ImagePickerComponent from '@/modules/auth/components/ImagePicker';
 import { register } from '../services/authService';
 import { getAge, formatDate } from '../helpers/userHelpers';
+import { validateEmail, validatePassword, validateName, validateDateOfBirth } from '../helpers/validation';
 import { useRegistrationFormState } from '../hooks/useRegistrationFormState';
 import { useAppDispatch } from '../../../store';
-import { setUser } from '../models/userSlice';
+import { setUser } from '../../../store/slices/userSlice';
 import auth from '@react-native-firebase/auth';
 
 export default function RegistrationScreen() {
@@ -29,15 +30,30 @@ export default function RegistrationScreen() {
   const dispatch = useAppDispatch();
 
   const onSubmit = async (data: { name: string; email: string; password: string }) => {
-    if (!data.name || !data.email || !data.password || !dateOfBirth) {
-      setError('root', { type: 'manual', message: 'Please fill all required fields' });
+    // Validate all fields
+    const nameError = validateName(data.name);
+    const emailError = validateEmail(data.email);
+    const passwordError = validatePassword(data.password);
+    const dateOfBirthError = validateDateOfBirth(dateOfBirth);
+    
+    if (nameError) {
+      setError('name', { type: 'manual', message: nameError });
       return;
     }
-    const age = getAge(dateOfBirth);
-    if (age < 13 || age > 120) {
-      setError('root', { type: 'manual', message: 'Age must be between 13 and 120' });
+    if (emailError) {
+      setError('email', { type: 'manual', message: emailError });
       return;
     }
+    if (passwordError) {
+      setError('password', { type: 'manual', message: passwordError });
+      return;
+    }
+    if (dateOfBirthError) {
+      setError('root', { type: 'manual', message: dateOfBirthError });
+      return;
+    }
+    
+    const age = getAge(dateOfBirth!);
     setIsLoading(true);
     clearErrors('root');
     try {
@@ -87,7 +103,10 @@ export default function RegistrationScreen() {
               <Controller
                 control={control}
                 name="name"
-                rules={{ required: 'Name is required' }}
+                rules={{ 
+                  required: 'Name is required',
+                  validate: (value) => validateName(value) || true
+                }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     label="Name"
@@ -106,7 +125,10 @@ export default function RegistrationScreen() {
               <Controller
                 control={control}
                 name="email"
-                rules={{ required: 'Email is required' }}
+                rules={{ 
+                  required: 'Email is required',
+                  validate: (value) => validateEmail(value) || true
+                }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     label="Email"
@@ -127,7 +149,10 @@ export default function RegistrationScreen() {
               <Controller
                 control={control}
                 name="password"
-                rules={{ required: 'Password is required', minLength: { value: 6, message: 'Password must be at least 6 characters' } }}
+                rules={{ 
+                  required: 'Password is required',
+                  validate: (value) => validatePassword(value) || true
+                }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     label="Password"

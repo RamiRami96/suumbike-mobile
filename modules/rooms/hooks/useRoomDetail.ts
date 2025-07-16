@@ -7,25 +7,32 @@ import {
   RTCSessionDescription,
   mediaDevices,
   RTCIceCandidate,
+  MediaStream,
 } from 'react-native-webrtc';
 import { deleteRoom, joinRoom } from '../services/roomService';
 import { Alert } from 'react-native';
+import { User } from '../../auth/models/User';
+import { Call } from '../models/Call';
+import { WEBRTC_CONFIG, MEDIA_CONSTRAINTS, OFFER_OPTIONS } from '../config/webrtcConfig';
 
 export function useRoomDetail(id: string) {
   const user = useUser();
-  const [opponent, setOpponent] = useState<any>(null);
-  const [callDoc, setCallDoc] = useState<any>(null);
+  const [opponent, setOpponent] = useState<User | null>(null);
+  const [callDoc, setCallDoc] = useState<Call | null>(null);
   const [isCalling, setIsCalling] = useState(false);
   const [isInCall, setIsInCall] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const [roomDeleted, setRoomDeleted] = useState(false);
-  const pc = useRef<any>(null);
-  const localStream = useRef<any>(null);
+  const pc = useRef<RTCPeerConnection | null>(null);
+  const localStream = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    const unsub = firestore().collection('calls').doc(id).onSnapshot((doc: any) => {
-      setCallDoc(doc.data());
+    const unsub = firestore().collection('calls').doc(id).onSnapshot((doc) => {
+      const data = doc.data();
+      if (data) {
+        setCallDoc(data as Call);
+      }
     });
     return () => unsub();
   }, [id]);
@@ -100,7 +107,10 @@ export function useRoomDetail(id: string) {
         const opponentId = roomData.users.find((uid: string) => uid !== user.id);
         if (opponentId) {
           const opponentDoc = await firestore().collection('users').doc(opponentId).get();
-          setOpponent(opponentDoc.data());
+          const opponentData = opponentDoc.data();
+          if (opponentData) {
+            setOpponent(opponentData as User);
+          }
         }
       }
 
@@ -151,73 +161,88 @@ export function useRoomDetail(id: string) {
   const createOffer = useCallback(async () => {
     if (!isOwner || !opponent) return;
     
-    const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
     setIsCalling(true);
-    pc.current = new RTCPeerConnection(servers);
-    const stream = await mediaDevices.getUserMedia({ audio: true });
-    localStream.current = stream;
-    stream.getTracks().forEach((track: any) => (pc.current as any)?.addTrack(track, stream));
-    
-    const offer = await (pc.current as any).createOffer({});
-    await (pc.current as any).setLocalDescription(offer);
-    await firestore().collection('calls').doc(id).set({ offer: offer.toJSON() });
-    
-    (pc.current as any).onicecandidate = (event: any) => {
-      if (event.candidate) {
-        firestore()
-          .collection('calls')
-          .doc(id)
-          .collection('candidates')
-          .add(event.candidate.toJSON());
-      }
-    };
-    
-    setIsInCall(true);
+    try {
+      pc.current = new RTCPeerConnection(WEBRTC_CONFIG);
+      const stream = await mediaDevices.getUserMedia(MEDIA_CONSTRAINTS);
+      localStream.current = stream;
+      stream.getTracks().forEach((track) => pc.current?.addTrack(track, stream));
+      
+      const offer = await pc.current.createOffer(OFFER_OPTIONS);
+      await pc.current.setLocalDescription(offer);
+      await firestore().collection('calls').doc(id).set({ 
+        offer: offer.toJSON(),
+        createdAt: Date.now(),
+        roomId: id
+      });
+      
+      (pc.current as any).onicecandidate = (event: any) => {
+        if (event.candidate) {
+          firestore()
+            .collection('calls')
+            .doc(id)
+            .collection('candidates')
+            .add(event.candidate.toJSON());
+        }
+      };
+      
+      setIsInCall(true);
+    } catch (error) {
+      console.error('Error creating offer:', error);
+      Alert.alert('Error', 'Failed to start call. Please try again.');
+    }
   }, [isOwner, opponent, id]);
 
   const joinCall = async () => {
     if (!opponent) return;
     
-    const servers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
     setIsCalling(true);
-    pc.current = new RTCPeerConnection(servers);
-    const stream = await mediaDevices.getUserMedia({ audio: true });
-    localStream.current = stream;
-    stream.getTracks().forEach((track: any) => (pc.current as any)?.addTrack(track, stream));
-    
-    const callDoc = await firestore().collection('calls').doc(id).get();
-    const offer = callDoc.data()?.offer;
-    if (!offer) return alert('No offer found');
-    
-    await (pc.current as any).setRemoteDescription(new RTCSessionDescription(offer));
-    const answer = await (pc.current as any).createAnswer({});
-    await (pc.current as any).setLocalDescription(answer);
-    await firestore().collection('calls').doc(id).update({ answer: answer.toJSON() });
-    
-    (pc.current as any).onicecandidate = (event: any) => {
-      if (event.candidate) {
-        firestore()
-          .collection('calls')
-          .doc(id)
-          .collection('candidates')
-          .add(event.candidate.toJSON());
+    try {
+      pc.current = new RTCPeerConnection(WEBRTC_CONFIG);
+      const stream = await mediaDevices.getUserMedia(MEDIA_CONSTRAINTS);
+      localStream.current = stream;
+      stream.getTracks().forEach((track) => pc.current?.addTrack(track, stream));
+      
+      const callDoc = await firestore().collection('calls').doc(id).get();
+      const offer = callDoc.data()?.offer;
+      if (!offer) {
+        Alert.alert('Error', 'No offer found. Please try again.');
+        return;
       }
-    };
-    
-    firestore()
-      .collection('calls')
-      .doc(id)
-      .collection('candidates')
-      .onSnapshot((snapshot: any) => {
-        snapshot.docChanges().forEach(async (change: any) => {
-          if (change.type === 'added') {
-            const candidate = new RTCIceCandidate(change.doc.data());
-            await (pc.current as any)?.addIceCandidate(candidate);
-          }
+      
+      await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await pc.current.createAnswer();
+      await pc.current.setLocalDescription(answer);
+      await firestore().collection('calls').doc(id).update({ answer: answer.toJSON() });
+      
+      (pc.current as any).onicecandidate = (event: any) => {
+        if (event.candidate) {
+          firestore()
+            .collection('calls')
+            .doc(id)
+            .collection('candidates')
+            .add(event.candidate.toJSON());
+        }
+      };
+      
+      firestore()
+        .collection('calls')
+        .doc(id)
+        .collection('candidates')
+        .onSnapshot((snapshot: any) => {
+          snapshot.docChanges().forEach(async (change: any) => {
+            if (change.type === 'added') {
+              const candidate = new RTCIceCandidate(change.doc.data());
+              await pc.current?.addIceCandidate(candidate);
+            }
+          });
         });
-      });
-    
-    setIsInCall(true);
+      
+      setIsInCall(true);
+    } catch (error) {
+      console.error('Error joining call:', error);
+      Alert.alert('Error', 'Failed to join call. Please try again.');
+    }
   };
 
   // Start call when opponent joins (for room owner)
@@ -232,10 +257,10 @@ export function useRoomDetail(id: string) {
     const userRef = firestore().collection('users').doc(user.id);
     const opponentRef = firestore().collection('users').doc(opponent.id);
     await userRef.update({
-      likedUsers: firestore.FieldValue.arrayUnion(opponent)
+      likedUsers: firestore.FieldValue.arrayUnion(opponent.id)
     });
     await opponentRef.update({
-      likedUsers: firestore.FieldValue.arrayUnion(user)
+      likedUsers: firestore.FieldValue.arrayUnion(user.id)
     });
     // Delete room after successful pass
     await deleteRoom(id);

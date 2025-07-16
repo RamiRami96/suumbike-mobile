@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, Card, Text, TextInput } from 'react-native-paper';
 import { login } from '../services/authService';
+import { validateEmail, validatePassword } from '../helpers/validation';
 import { StyleSheet, View } from 'react-native';
 import { useAppDispatch } from '../../../store';
-import { setUser } from '../models/userSlice';
+import { setUser } from '../../../store/slices/userSlice';
 import auth from '@react-native-firebase/auth';
 
 export default function LoginScreen() {
@@ -52,7 +53,10 @@ export default function LoginScreen() {
           <Controller
             control={control}
             name="email"
-            rules={{ required: 'Email is required' }}
+            rules={{ 
+              required: 'Email is required',
+              validate: (value) => validateEmail(value) || true
+            }}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 label="Email"
@@ -71,7 +75,10 @@ export default function LoginScreen() {
           <Controller
             control={control}
             name="password"
-            rules={{ required: 'Password is required' }}
+            rules={{ 
+              required: 'Password is required',
+              validate: (value) => validatePassword(value) || true
+            }}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 label="Password"

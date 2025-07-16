@@ -12,6 +12,7 @@ import { setUser } from '../store/slices/userSlice';
 import MainPage from './(tabs)/index';
 import ProfileTab from './(tabs)/profile';
 import { User } from '@/modules/auth/models/User';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const Tab = createBottomTabNavigator();
 
@@ -93,8 +94,10 @@ function AppContent() {
 
 export default function RootLayout() {
   return (
-    <ReduxProvider store={store}>
-      <AppContent />
-    </ReduxProvider>
+    <ErrorBoundary>
+      <ReduxProvider store={store}>
+        <AppContent />
+      </ReduxProvider>
+    </ErrorBoundary>
   );
 }

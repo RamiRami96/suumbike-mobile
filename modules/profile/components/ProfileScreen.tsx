@@ -20,8 +20,28 @@ export default function ProfileScreen() {
     try {
       const userDoc = await firestore().collection('users').doc(user.id).get();
       const userData = userDoc.data();
-      if (userData?.likedUsers) {
-        setLikedUsers(userData.likedUsers);
+      if (userData?.likedUsers && Array.isArray(userData.likedUsers)) {
+        // Limit concurrent requests to avoid rate limiting
+        const batchSize = 10;
+        const likedUsersData: User[] = [];
+        
+        for (let i = 0; i < userData.likedUsers.length; i += batchSize) {
+          const batch = userData.likedUsers.slice(i, i + batchSize);
+          const batchResults = await Promise.all(
+            batch.map(async (userId: string) => {
+              try {
+                const likedUserDoc = await firestore().collection('users').doc(userId).get();
+                return likedUserDoc.data() as User;
+              } catch (error) {
+                console.error(`Error fetching user ${userId}:`, error);
+                return null;
+              }
+            })
+          );
+          likedUsersData.push(...batchResults.filter(Boolean) as User[]);
+        }
+        
+        setLikedUsers(likedUsersData);
       }
     } catch (error) {
       console.error('Error fetching liked users:', error);
