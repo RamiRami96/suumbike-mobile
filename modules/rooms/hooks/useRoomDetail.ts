@@ -9,6 +9,7 @@ import {
   RTCIceCandidate,
 } from 'react-native-webrtc';
 import { deleteRoom, joinRoom } from '../services/roomService';
+import { Alert } from 'react-native';
 
 export function useRoomDetail(id: string) {
   const user = useUser();
@@ -18,6 +19,7 @@ export function useRoomDetail(id: string) {
   const [isInCall, setIsInCall] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
+  const [roomDeleted, setRoomDeleted] = useState(false);
   const pc = useRef<any>(null);
   const localStream = useRef<any>(null);
 
@@ -27,6 +29,61 @@ export function useRoomDetail(id: string) {
     });
     return () => unsub();
   }, [id]);
+
+  // Monitor room for deletion (for guests)
+  useEffect(() => {
+    if (isOwner) return; // Only monitor for guests
+    
+    const unsub = firestore().collection('rooms').doc(id).onSnapshot((doc: any) => {
+      if (!doc.exists()) {
+        // Room was deleted - guest was rejected
+        setRoomDeleted(true);
+        Alert.alert(
+          'Room Rejected',
+          'Owner of the room rejected you',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.push('/')
+            }
+          ]
+        );
+      }
+    });
+    
+    return () => unsub();
+  }, [id, isOwner]);
+
+  // Monitor user's likedUsers for pass notification (for guests)
+  useEffect(() => {
+    if (isOwner || !user?.id) return; // Only monitor for guests
+    
+    const unsub = firestore().collection('users').doc(user.id).onSnapshot((doc: any) => {
+      const userData = doc.data();
+      if (userData?.likedUsers && opponent) {
+        // Check if opponent was recently added to likedUsers
+        const wasAdded = userData.likedUsers.some((likedUser: any) => likedUser.id === opponent.id);
+        if (wasAdded && !roomDeleted) {
+          Alert.alert(
+            'Connection Made!',
+            'Owner of the room added you in contacts. You can see them in your liked users.',
+            [
+              {
+                text: 'View Profile',
+                onPress: () => router.push('/profile')
+              },
+              {
+                text: 'OK',
+                onPress: () => router.push('/profile')
+              }
+            ]
+          );
+        }
+      }
+    });
+    
+    return () => unsub();
+  }, [user?.id, isOwner, opponent, roomDeleted]);
 
   useEffect(() => {
     const fetchRoomData = async () => {
