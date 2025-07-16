@@ -1,1 +1,1 @@
-export { default as ProfileScreen } from './components/ProfileScreen'; 
+export { default as ProfileScreen } from './components/Profile'; 

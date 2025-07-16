@@ -8,7 +8,7 @@ import { useAppDispatch, useUser } from '../../../store';
 import firestore from '@react-native-firebase/firestore';
 import { User } from '../../auth/models/User';
 
-export default function ProfileScreen() {
+export default function Profile() {
   const user = useUser();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
