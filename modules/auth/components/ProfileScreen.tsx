@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Image, View, Alert } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
-import ImagePickerComponent from './ImagePicker';
+import ImagePickerComponent from '../../../components/ImagePicker';
 import { logout } from '../../../store/slices/userSlice';
 import { logout as logoutService } from '../services/authService';
 import { useAppDispatch, useUser } from '../../../store';

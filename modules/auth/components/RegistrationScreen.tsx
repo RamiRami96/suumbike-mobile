@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { Button, Card, Text, TextInput } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ImagePickerComponent from '@/modules/auth/components/ImagePicker';
+import ImagePickerComponent from '@/components/ImagePicker';
 import { register } from '../services/authService';
 import { getAge, formatDate } from '../helpers/userHelpers';
 import { validateEmail, validatePassword, validateName, validateDateOfBirth } from '../helpers/validation';
