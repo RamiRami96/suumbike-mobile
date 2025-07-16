@@ -11,7 +11,6 @@ import { validateEmail, validatePassword, validateName, validateDateOfBirth } fr
 import { useRegistrationFormState } from '../hooks/useRegistrationFormState';
 import { useAppDispatch } from '../../../store';
 import { setUser } from '../../../store/slices/userSlice';
-import auth from '@react-native-firebase/auth';
 
 export default function RegistrationScreen() {
   const {
@@ -57,8 +56,8 @@ export default function RegistrationScreen() {
     setIsLoading(true);
     clearErrors('root');
     try {
-      await register(data.email, data.password);
-      const uid = auth().currentUser?.uid || '';
+      const userCredential = await register(data.email, data.password);
+      const uid = userCredential.user?.uid || '';
       dispatch(setUser({
         id: uid,
         email: data.email,

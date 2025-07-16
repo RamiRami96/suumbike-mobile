@@ -6,7 +6,6 @@ import { validateEmail, validatePassword } from '../helpers/validation';
 import { StyleSheet, View } from 'react-native';
 import { useAppDispatch } from '../../../store';
 import { setUser } from '../../../store/slices/userSlice';
-import auth from '@react-native-firebase/auth';
 
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,8 +18,8 @@ export default function LoginScreen() {
     setIsLoading(true);
     clearErrors('root');
     try {
-      await login(data.email, data.password);
-      const uid = auth().currentUser?.uid || '';
+      const userCredential = await login(data.email, data.password);
+      const uid = userCredential.user?.uid || '';
       dispatch(setUser({
         id: uid,
         email: data.email,

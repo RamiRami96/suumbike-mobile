@@ -1,17 +1,18 @@
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { auth } from '../../../firebaseConfig';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, User, UserCredential } from 'firebase/auth';
 
-export const register = async (email: string, password: string): Promise<FirebaseAuthTypes.UserCredential> => {
+export const register = async (email: string, password: string): Promise<UserCredential> => {
   try {
-    return await auth().createUserWithEmailAndPassword(email, password);
+    return await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
     console.error('Registration error:', error);
     throw error;
   }
 };
 
-export const login = async (email: string, password: string): Promise<FirebaseAuthTypes.UserCredential> => {
+export const login = async (email: string, password: string): Promise<UserCredential> => {
   try {
-    return await auth().signInWithEmailAndPassword(email, password);
+    return await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
     console.error('Login error:', error);
     throw error;
@@ -20,16 +21,16 @@ export const login = async (email: string, password: string): Promise<FirebaseAu
 
 export const logout = async (): Promise<void> => {
   try {
-    await auth().signOut();
+    await signOut(auth);
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
   }
 }; 
 
-export const getCurrentUser = (): FirebaseAuthTypes.User | null => {
+export const getCurrentUser = (): User | null => {
   try {
-    return auth().currentUser;
+    return auth.currentUser;
   } catch (error) {
     console.error('Get current user error:', error);
     return null;

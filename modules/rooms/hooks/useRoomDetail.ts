@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import firestore from '@react-native-firebase/firestore';
+import { db } from '../../../firebaseConfig';
+import { doc, getDoc, onSnapshot, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { useUser } from '../../../store';
 import { router } from 'expo-router';
 import {
@@ -28,7 +29,7 @@ export function useRoomDetail(id: string) {
   const localStream = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    const unsub = firestore().collection('calls').doc(id).onSnapshot((doc) => {
+    const unsub = onSnapshot(doc(db, 'calls', id), (doc) => {
       const data = doc.data();
       if (data) {
         setCallDoc(data as Call);
@@ -41,7 +42,7 @@ export function useRoomDetail(id: string) {
   useEffect(() => {
     if (isOwner) return; // Only monitor for guests
     
-    const unsub = firestore().collection('rooms').doc(id).onSnapshot((doc: any) => {
+    const unsub = onSnapshot(doc(db, 'rooms', id), (doc: any) => {
       if (!doc.exists()) {
         // Room was deleted - guest was rejected
         setRoomDeleted(true);
@@ -65,7 +66,7 @@ export function useRoomDetail(id: string) {
   useEffect(() => {
     if (isOwner || !user?.id) return; // Only monitor for guests
     
-    const unsub = firestore().collection('users').doc(user.id).onSnapshot((doc: any) => {
+    const unsub = onSnapshot(doc(db, 'users', user.id), (doc: any) => {
       const userData = doc.data();
       if (userData?.likedUsers && opponent) {
         // Check if opponent was recently added to likedUsers
@@ -95,7 +96,7 @@ export function useRoomDetail(id: string) {
   useEffect(() => {
     const fetchRoomData = async () => {
       if (!user) return;
-      const roomDoc = await firestore().collection('rooms').doc(id).get();
+      const roomDoc = await getDoc(doc(db, 'rooms', id));
       const roomData = roomDoc.data();
       if (!roomData) return;
       
@@ -106,7 +107,7 @@ export function useRoomDetail(id: string) {
       if (roomData.users && roomData.users.length > 0) {
         const opponentId = roomData.users.find((uid: string) => uid !== user.id);
         if (opponentId) {
-          const opponentDoc = await firestore().collection('users').doc(opponentId).get();
+          const opponentDoc = await getDoc(doc(db, 'users', opponentId));
           const opponentData = opponentDoc.data();
           if (opponentData) {
             setOpponent(opponentData as User);
@@ -170,7 +171,7 @@ export function useRoomDetail(id: string) {
       
       const offer = await pc.current.createOffer(OFFER_OPTIONS);
       await pc.current.setLocalDescription(offer);
-      await firestore().collection('calls').doc(id).set({ 
+      await setDoc(doc(db, 'calls', id), { 
         offer: offer.toJSON(),
         createdAt: Date.now(),
         roomId: id
@@ -178,11 +179,13 @@ export function useRoomDetail(id: string) {
       
       (pc.current as any).onicecandidate = (event: any) => {
         if (event.candidate) {
-          firestore()
-            .collection('calls')
-            .doc(id)
-            .collection('candidates')
-            .add(event.candidate.toJSON());
+          setDoc(doc(db, 'calls', id), {
+            candidates: arrayUnion({
+              sdpMLineIndex: event.candidate.sdpMLineIndex,
+              sdpMid: event.candidate.sdpMid,
+              candidate: event.candidate.candidate,
+            }),
+          });
         }
       };
       
@@ -203,7 +206,7 @@ export function useRoomDetail(id: string) {
       localStream.current = stream;
       stream.getTracks().forEach((track) => pc.current?.addTrack(track, stream));
       
-      const callDoc = await firestore().collection('calls').doc(id).get();
+      const callDoc = await getDoc(doc(db, 'calls', id));
       const offer = callDoc.data()?.offer;
       if (!offer) {
         Alert.alert('Error', 'No offer found. Please try again.');
@@ -213,30 +216,28 @@ export function useRoomDetail(id: string) {
       await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
       const answer = await pc.current.createAnswer();
       await pc.current.setLocalDescription(answer);
-      await firestore().collection('calls').doc(id).update({ answer: answer.toJSON() });
+      await setDoc(doc(db, 'calls', id), { answer: answer.toJSON() });
       
       (pc.current as any).onicecandidate = (event: any) => {
         if (event.candidate) {
-          firestore()
-            .collection('calls')
-            .doc(id)
-            .collection('candidates')
-            .add(event.candidate.toJSON());
+          setDoc(doc(db, 'calls', id), {
+            candidates: arrayUnion({
+              sdpMLineIndex: event.candidate.sdpMLineIndex,
+              sdpMid: event.candidate.sdpMid,
+              candidate: event.candidate.candidate,
+            }),
+          });
         }
       };
       
-      firestore()
-        .collection('calls')
-        .doc(id)
-        .collection('candidates')
-        .onSnapshot((snapshot: any) => {
-          snapshot.docChanges().forEach(async (change: any) => {
-            if (change.type === 'added') {
-              const candidate = new RTCIceCandidate(change.doc.data());
-              await pc.current?.addIceCandidate(candidate);
-            }
-          });
+      onSnapshot(doc(db, 'calls', id, 'candidates'), (snapshot: any) => {
+        snapshot.docChanges().forEach(async (change: any) => {
+          if (change.type === 'added') {
+            const candidate = new RTCIceCandidate(change.doc.data());
+            await pc.current?.addIceCandidate(candidate);
+          }
         });
+      });
       
       setIsInCall(true);
     } catch (error) {
@@ -254,13 +255,13 @@ export function useRoomDetail(id: string) {
 
   const handlePass = async () => {
     if (!user || !opponent) return;
-    const userRef = firestore().collection('users').doc(user.id);
-    const opponentRef = firestore().collection('users').doc(opponent.id);
-    await userRef.update({
-      likedUsers: firestore.FieldValue.arrayUnion(opponent.id)
+    const userRef = doc(db, 'users', user.id);
+    const opponentRef = doc(db, 'users', opponent.id);
+    await updateDoc(userRef, {
+      likedUsers: arrayUnion(opponent.id)
     });
-    await opponentRef.update({
-      likedUsers: firestore.FieldValue.arrayUnion(user.id)
+    await updateDoc(opponentRef, {
+      likedUsers: arrayUnion(user.id)
     });
     // Delete room after successful pass
     await deleteRoom(id);

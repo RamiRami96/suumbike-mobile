@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../../../store';
-import firestore from '@react-native-firebase/firestore';
+import { db } from '../../../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 import { User } from '../../auth/models/User';
 
 export function useProfileState() {
@@ -12,7 +13,7 @@ export function useProfileState() {
   const fetchLikedUsers = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const userDoc = await firestore().collection('users').doc(user.id).get();
+      const userDoc = await getDoc(doc(db, 'users', user.id));
       const userData = userDoc.data();
       if (userData?.likedUsers && Array.isArray(userData.likedUsers)) {
         // Limit concurrent requests to avoid rate limiting
@@ -24,7 +25,7 @@ export function useProfileState() {
           const batchResults = await Promise.all(
             batch.map(async (userId: string) => {
               try {
-                const likedUserDoc = await firestore().collection('users').doc(userId).get();
+                const likedUserDoc = await getDoc(doc(db, 'users', userId));
                 return likedUserDoc.data() as User;
               } catch (error) {
                 console.error(`Error fetching user ${userId}:`, error);
