@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 import { useAppDispatch } from '../../store';
 import { logout } from '../../store/slices/userSlice';
 import { logout as logoutService } from '../../modules/auth/services/authService';
-import RoomList from '../../modules/rooms/components/Room';
+import RoomList from '../../modules/rooms/components/RoomList';
 import CreateRoomModal from '../../modules/rooms/components/CreateRoomModal';
 
 export default function MainPage() {
@@ -20,13 +20,17 @@ export default function MainPage() {
     }
   };
 
-
   return (
     <View style={styles.container}>
+      <Text style={styles.sectionTitle}>My Rooms</Text>
       <Button mode="contained" onPress={() => setModalVisible(true)} style={{ marginBottom: 16 }}>
         Create Room
       </Button>
-      <RoomList />
+      <RoomList type="my-rooms" />
+      
+      <Text style={styles.sectionTitle}>Available Rooms to Join</Text>
+      <RoomList type="available-rooms" />
+      
       <Button 
         mode="outlined" 
         onPress={handleLogout}
@@ -45,67 +49,17 @@ export default function MainPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 16,
     backgroundColor: '#19181e',
   },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 16,
-    borderWidth: 3,
-    borderColor: '#ddd',
-  },
-  profilePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 3,
-    borderColor: '#ddd',
-  },
-  profileInitial: {
-    color: '#666',
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  h1: {
-    marginBottom: 16,
-  },
-  subtitle: {
-    marginBottom: 32,
-    opacity: 0.7,
+    color: '#fff',
+    marginTop: 16,
+    marginBottom: 8,
   },
   logoutButton: {
-    marginBottom: 20,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 12,
-    width: '80%',
-    elevation: 5,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 16,
-    backgroundColor: '#f9f9f9',
+    marginTop: 20,
   },
 });

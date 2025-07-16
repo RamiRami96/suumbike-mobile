@@ -3,6 +3,7 @@ import { Modal, View, TextInput, StyleSheet, Alert } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { useUser } from '../../../store';
 import { createRoom } from '../services/roomService';
+import { router } from 'expo-router';
 
 type Props = {
   visible: boolean;
@@ -25,9 +26,11 @@ const CreateRoomModal= ({ visible, onClose }: Props) => {
     }
     setCreating(true);
     try {
-      await createRoom(roomName.trim(), user.id);
+      const room = await createRoom(roomName.trim(), user.id);
       setRoomName('');
       onClose();
+      // @ts-expect-error: Dynamic route type not recognized by expo-router types
+      router.push({ pathname: '/(tabs)/room/[id]', params: { id: room.id } });
     } catch (error) {
       console.error('Error creating room:', error);
       Alert.alert('Error', 'Failed to create room');

@@ -1,16 +1,38 @@
-import React, { useState } from 'react';
-import { StyleSheet, Image, View, Alert } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, Image, View, Alert, FlatList } from 'react-native';
+import { Button, Card, Text, Avatar } from 'react-native-paper';
 import ImagePickerComponent from '../../auth/components/ImagePicker';
 import { logout } from '../../../store/slices/userSlice';
 import { logout as logoutService } from '../../auth/services/authService';
 import { useAppDispatch, useUser } from '../../../store';
+import firestore from '@react-native-firebase/firestore';
+import { User } from '../../auth/models/User';
 
 export default function ProfileScreen() {
   const user = useUser();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(user?.avatar || '');
+  const [likedUsers, setLikedUsers] = useState<User[]>([]);
+
+  const fetchLikedUsers = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const userDoc = await firestore().collection('users').doc(user.id).get();
+      const userData = userDoc.data();
+      if (userData?.likedUsers) {
+        setLikedUsers(userData.likedUsers);
+      }
+    } catch (error) {
+      console.error('Error fetching liked users:', error);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchLikedUsers();
+    }
+  }, [user?.id, fetchLikedUsers]);
 
   const handleLogout = async () => {
     try {
@@ -38,6 +60,19 @@ export default function ProfileScreen() {
   const handleImageSelected = (imageUri: string) => {
     setSelectedImage(imageUri);
   };
+
+  const renderLikedUser = ({ item }: { item: User }) => (
+    <View style={styles.likedUserItem}>
+      <Avatar.Image 
+        size={40} 
+        source={{ uri: item.avatar || `https://ui-avatars.com/api/?name=${item.name}&background=random` }} 
+      />
+      <View style={styles.likedUserInfo}>
+        <Text variant="bodyMedium">{item.name}</Text>
+        <Text variant="bodySmall" style={styles.userAge}>Age: {item.age}</Text>
+      </View>
+    </View>
+  );
 
   if (!user) {
     return (
@@ -81,6 +116,24 @@ export default function ProfileScreen() {
           >
             Update Profile
           </Button>
+        </Card.Content>
+      </Card>
+
+      <Card style={styles.card}>
+        <Card.Title title={`Liked Users (${likedUsers.length})`} />
+        <Card.Content>
+          {likedUsers.length > 0 ? (
+            <FlatList
+              data={likedUsers}
+              renderItem={renderLikedUser}
+              keyExtractor={(item) => item.id}
+              style={styles.likedUsersList}
+            />
+          ) : (
+            <Text variant="bodyMedium" style={styles.noLikedUsers}>
+              No liked users yet. Start matching to see your connections!
+            </Text>
+          )}
         </Card.Content>
       </Card>
 
@@ -146,5 +199,27 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     marginTop: 8,
+  },
+  likedUsersList: {
+    maxHeight: 200,
+  },
+  likedUserItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  likedUserInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  userAge: {
+    opacity: 0.7,
+  },
+  noLikedUsers: {
+    textAlign: 'center',
+    opacity: 0.7,
+    fontStyle: 'italic',
   },
 }); 
